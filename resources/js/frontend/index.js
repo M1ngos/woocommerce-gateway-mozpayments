@@ -2,7 +2,6 @@ import { registerPaymentMethod } from '@woocommerce/blocks-registry';
 import { decodeEntities } from '@wordpress/html-entities';
 import { getSetting } from '@woocommerce/settings';
 import { useEffect, useState } from '@wordpress/element';
-import { PaymentMethodLabel, PaymentMethodIcons } from '@woocommerce/blocks-components';
 
 const settings = getSetting('dummy_data', {});
 
@@ -19,7 +18,7 @@ const Content = ({ eventRegistration, emitResponse }) => {
             if (!phoneNumber) {
                 return {
                     type: 'error',
-                    message: 'Please enter a phone number',
+                    message: 'Por favor introduza um número de telefone',
                 };
             }
 
@@ -29,7 +28,7 @@ const Content = ({ eventRegistration, emitResponse }) => {
             if (!validPrefixes.includes(prefix) || phoneNumber.length !== 9) {
                 return {
                     type: 'error',
-                    message: 'Invalid phone number. Use M-Pesa (84/85) or E-Mola (86/87) numbers.',
+                    message: 'Número de telefone inválido. Utilize os números M-Pesa (84/85) ou E-Mola (86/87).',
                 };
             }
 
@@ -50,7 +49,7 @@ const Content = ({ eventRegistration, emitResponse }) => {
         <div className="mobile-payment-method-block">
             <div className="mobile-payment-input">
                 <label htmlFor="mobile-number">
-                    Mobile Number:
+				Número a cobrar:
                     <input
                         type="tel"
                         id="mobile-number"
@@ -67,21 +66,21 @@ const Content = ({ eventRegistration, emitResponse }) => {
                     />
                 </label>
                 {error && <div className="mobile-payment-error">{error}</div>}
-                <div className="mobile-payment-info">
-                    <small>M-Pesa: Numbers starting with 84 or 85</small>
+                {/* <div className="mobile-payment-info">
+                    <small>M-Pesa: Números começados por 84 ou 85</small>
                     <br />
-                    <small>E-Mola: Numbers starting with 86 or 87</small>
-                </div>
+                    <small>E-Mola: Números começados por 86 ou 87</small>
+                </div> */}
             </div>
         </div>
     );
 };
 
-const Label = () => {
+const Label = (props) => {
+	const { PaymentMethodLabel } = props.components;
     return (
         <PaymentMethodLabel
             text={decodeEntities(settings.title) || 'Mobile Payment'}
-            icon={<PaymentMethodIcons icons={[]} />}
         />
     );
 };

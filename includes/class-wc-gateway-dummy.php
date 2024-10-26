@@ -61,8 +61,8 @@ class WC_Gateway_Dummy extends WC_Payment_Gateway {
 			'multiple_subscriptions'
 		);
 
-		$this->method_title       = _x( 'Dummy Payment', 'Dummy payment method', 'woocommerce-gateway-dummy' );
-		$this->method_description = __( 'Allows dummy payments.', 'woocommerce-gateway-dummy' );
+		$this->method_title       = _x( 'Mozpayments', 'Dummy payment method', 'woocommerce-gateway-dummy' );
+		$this->method_description = __( 'Mozpayments permite fazer pagamentos online com plataformas de transações financeiras como E-mola e M-pesa em Moçambique.', 'woocommerce-gateway-dummy' );
 
 		// Load the settings.
 		$this->init_form_fields();
@@ -87,37 +87,37 @@ class WC_Gateway_Dummy extends WC_Payment_Gateway {
 
 		$this->form_fields = array(
             'enabled' => array(
-                'title'   => __( 'Enable/Disable', 'woocommerce-gateway-dummy' ),
+                'title'   => __( 'Ativar/Desativar', 'woocommerce-gateway-dummy' ),
                 'type'    => 'checkbox',
-                'label'   => __( 'Enable Mobile Payments', 'woocommerce-gateway-dummy' ),
+                'label'   => __( 'Ativar pagamentos móveis', 'woocommerce-gateway-dummy' ),
                 'default' => 'yes',
             ),
             'title' => array(
-                'title'       => __( 'Title', 'woocommerce-gateway-dummy' ),
+                'title'       => __( 'Título', 'woocommerce-gateway-dummy' ),
                 'type'        => 'text',
-                'description' => __( 'This controls the title which the user sees during checkout.', 'woocommerce-gateway-dummy' ),
+                'description' => __( 'Isto controla o título que o utilizador vê durante a finalização da compra.', 'woocommerce-gateway-dummy' ),
                 'default'     => __( 'Mobile Payment (M-Pesa/E-Mola)', 'woocommerce-gateway-dummy' ),
                 'desc_tip'    => true,
             ),
             'description' => array(
-                'title'       => __( 'Description', 'woocommerce-gateway-dummy' ),
+                'title'       => __( 'Descrição', 'woocommerce-gateway-dummy' ),
                 'type'        => 'textarea',
-                'description' => __( 'Payment method description that the customer will see on your checkout.', 'woocommerce-gateway-dummy' ),
+                'description' => __( 'Descrição da forma de pagamento que o cliente verá no seu checkout.', 'woocommerce-gateway-dummy' ),
                 'default'     => __( 'Pay with M-Pesa (84/85) or E-Mola (86/87)', 'woocommerce-gateway-dummy' ),
                 'desc_tip'    => true,
             ),
             'merchant_key' => array(
-                'title'       => __( 'Merchant Key', 'woocommerce-gateway-dummy' ),
+                'title'       => __( 'Chave do comerciante', 'woocommerce-gateway-dummy' ),
                 'type'        => 'text',
-                'description' => __( 'Enter your merchant key for API authentication.', 'woocommerce-gateway-dummy' ),
+                'description' => __( 'Introduza a sua chave de comerciante para autenticação API.', 'woocommerce-gateway-dummy' ),
                 'default'     => '',
                 'desc_tip'    => true,
             ),
             'payment_timeout' => array(
-                'title'       => __( 'Payment Timeout', 'woocommerce-gateway-dummy' ),
+                'title'       => __( 'Tempo limite de pagamento', 'woocommerce-gateway-dummy' ),
                 'type'        => 'number',
-                'description' => __( 'How many seconds to wait for payment confirmation', 'woocommerce-gateway-dummy' ),
-                'default'     => '60',
+                'description' => __( 'Quantos segundos esperar pela confirmação do pagamento', 'woocommerce-gateway-dummy' ),
+                'default'     => '120',
                 'desc_tip'    => true,
             ),
         );
@@ -135,7 +135,7 @@ class WC_Gateway_Dummy extends WC_Payment_Gateway {
         
         // Validate phone number
         if (!$this->validate_phone_number($phone_number)) {
-            wc_add_notice(__('Invalid phone number format. Please use M-Pesa (84/85) or E-Mola (86/87) numbers.', 'woocommerce-gateway-dummy'), 'error');
+            wc_add_notice(__('Formato de número de telefone inválido. Utilize os números M-Pesa (84/85) ou E-Mola (86/87).', 'woocommerce-gateway-dummy'), 'error');
             return;
         }
 
@@ -147,7 +147,7 @@ class WC_Gateway_Dummy extends WC_Payment_Gateway {
 
         $response = wp_remote_post($api_url, array(
             'method' => 'POST',
-            'timeout' => 45,
+            'timeout' => 120,
             'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
             'body' => array(
                 'carteira' => $this->get_option('merchant_key'),
@@ -158,15 +158,19 @@ class WC_Gateway_Dummy extends WC_Payment_Gateway {
         ));
 
         if (is_wp_error($response)) {
-            wc_add_notice(__('Payment error:', 'woocommerce-gateway-dummy') . $response->get_error_message(), 'error');
+            wc_add_notice(__('Erro de pagamento:', 'woocommerce-gateway-dummy') . $response->get_error_message(), 'error');
             return;
         }
 
         $body = json_decode(wp_remote_retrieve_body($response), true);
 
         if ($body['status'] === 'success') {
+
+			// Mark the order as processing
+			$order->update_status('processing', __('Pagamento recebido, encomenda em processamento.', 'woocommerce-gateway-dummy'));
+    
             // Mark as pending payment
-            $order->update_status('pending', __('Awaiting mobile payment confirmation.', 'woocommerce-gateway-dummy'));
+            // $order->update_status('pending', __('Awaiting mobile payment confirmation.', 'woocommerce-gateway-dummy'));
             
             // Empty cart
             WC()->cart->empty_cart();
@@ -176,7 +180,7 @@ class WC_Gateway_Dummy extends WC_Payment_Gateway {
                 'redirect' => $this->get_return_url($order)
             );
         } else {
-            wc_add_notice(__('Payment error:', 'woocommerce-gateway-dummy') . $body['message'], 'error');
+            wc_add_notice(__('Erro de pagamento:', 'woocommerce-gateway-dummy') . $body['message'], 'error');
             return;
         }
     }

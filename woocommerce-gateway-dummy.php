@@ -1,12 +1,12 @@
 <?php
 /**
- * Plugin Name: WooCommerce Dummy Payments Gateway
- * Plugin URI: https://somewherewarm.com/
- * Description: Adds the Dummy Payments gateway to your WooCommerce website.
- * Version: 1.10.0
+ * Plugin Name: WooCommerce Mozpayments Gateway
+ * Plugin URI: https://mozpayment.online/
+ * Description: Receba pagamentos usando o provedor de pagamentos online - Mozpayments.
+ * Version: 0.2.0.
  *
- * Author: Woo
- * Author URI: https://somewherewarm.com/
+ * Author: Mozpayments
+ * Author URI: https://mozpayment.online/
  *
  * Text Domain: woocommerce-gateway-dummy
  * Domain Path: /i18n/languages/
