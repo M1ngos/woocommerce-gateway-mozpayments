@@ -1,0 +1,1 @@
+const settings = wc.blocksRegistry.getPaymentMethodData('dummy');
