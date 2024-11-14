@@ -1,18 +1,17 @@
 <?php
 /**
- * Plugin Name: WooCommerce Mozpayments Gateway
+ * Plugin Name: Mozpayments gateway for woocommerce
  * Plugin URI: https://mozpayment.online/
  * Description: Receba pagamentos usando o provedor de pagamentos online - Mozpayments.
- * Version: 0.2.0.
+ * Version: 0.2.0
  *
  * Author: Mozpayments
  * Author URI: https://mozpayment.online/
  *
- * Text Domain: woocommerce-gateway-dummy
- * Domain Path: /i18n/languages/
+ * Text Domain: Mozpayments
  *
  * Requires at least: 4.2
- * Tested up to: 6.6
+ * Tested up to: 6.7
  *
  * Copyright: © 2009-2024 Automattic.
  * License: GNU General Public License v3.0
@@ -45,7 +44,33 @@ class WC_Dummy_Payments {
 		// Registers WooCommerce Blocks integration.
 		add_action( 'woocommerce_blocks_loaded', array( __CLASS__, 'woocommerce_gateway_dummy_woocommerce_block_support' ) );
 
+		// // Add nonce to checkout fields
+		// add_filter('woocommerce_checkout_fields', 'add_mozpayments_checkout_fields');
+
+		// // Add nonce field to checkout form
+		// add_action('woocommerce_after_checkout_billing_form', 'add_mozpayments_checkout_nonce');
+
 	}
+
+
+
+	// function add_mozpayments_checkout_fields($fields) {
+	// 	// Add custom field for mobile number
+	// 	$fields['billing']['mobile_number'] = array(
+	// 		'type'        => 'text',
+	// 		'label'       => __('Número de Telefone M-Pesa/E-Mola', 'Mozpayments'),
+	// 		'required'    => true,
+	// 		'class'       => array('form-row-wide'),
+	// 		'priority'    => 100,
+	// 	);
+		
+	// 	return $fields;
+	// }
+
+	// function add_mozpayments_checkout_nonce($checkout) {
+	// 	wp_nonce_field('woocommerce-process_checkout', 'woocommerce-process-checkout-nonce');
+	// }
+
 
 	/**
 	 * Add the Dummy Payment gateway to the list of available gateways.

@@ -61,8 +61,8 @@ class WC_Gateway_Dummy extends WC_Payment_Gateway {
 			'multiple_subscriptions'
 		);
 
-		$this->method_title       = _x( 'Mozpayments', 'Dummy payment method', 'woocommerce-gateway-dummy' );
-		$this->method_description = __( 'Mozpayments permite fazer pagamentos online com plataformas de transações financeiras como E-mola e M-pesa em Moçambique.', 'woocommerce-gateway-dummy' );
+		$this->method_title       = _x( 'Mozpayments', 'Dummy payment method', 'Mozpayments' );
+		$this->method_description = __( 'Mozpayments permite fazer pagamentos online com plataformas de transações financeiras como E-mola e M-pesa em Moçambique.', 'Mozpayments' );
 
 		// Load the settings.
 		$this->init_form_fields();
@@ -87,103 +87,189 @@ class WC_Gateway_Dummy extends WC_Payment_Gateway {
 
 		$this->form_fields = array(
             'enabled' => array(
-                'title'   => __( 'Ativar/Desativar', 'woocommerce-gateway-dummy' ),
+                'title'   => __( 'Ativar/Desativar', 'Mozpayments' ),
                 'type'    => 'checkbox',
-                'label'   => __( 'Ativar pagamentos móveis', 'woocommerce-gateway-dummy' ),
+                'label'   => __( 'Ativar pagamentos móveis', 'Mozpayments' ),
                 'default' => 'yes',
             ),
             'title' => array(
-                'title'       => __( 'Título', 'woocommerce-gateway-dummy' ),
+                'title'       => __( 'Título', 'Mozpayments' ),
                 'type'        => 'text',
-                'description' => __( 'Isto controla o título que o utilizador vê durante a finalização da compra.', 'woocommerce-gateway-dummy' ),
-                'default'     => __( 'Mobile Payment (M-Pesa/E-Mola)', 'woocommerce-gateway-dummy' ),
+                'description' => __( 'Isto controla o título que o utilizador vê durante a finalização da compra.', 'Mozpayments' ),
+                'default'     => __( 'Mobile Payment (M-Pesa/E-Mola)', 'Mozpayments' ),
                 'desc_tip'    => true,
             ),
             'description' => array(
-                'title'       => __( 'Descrição', 'woocommerce-gateway-dummy' ),
+                'title'       => __( 'Descrição', 'Mozpayments' ),
                 'type'        => 'textarea',
-                'description' => __( 'Descrição da forma de pagamento que o cliente verá no seu checkout.', 'woocommerce-gateway-dummy' ),
-                'default'     => __( 'Pay with M-Pesa (84/85) or E-Mola (86/87)', 'woocommerce-gateway-dummy' ),
+                'description' => __( 'Descrição da forma de pagamento que o cliente verá no seu checkout.', 'Mozpayments' ),
+                'default'     => __( 'Pay with M-Pesa (84/85) or E-Mola (86/87)', 'Mozpayments' ),
                 'desc_tip'    => true,
             ),
             'merchant_key' => array(
-                'title'       => __( 'Chave do comerciante', 'woocommerce-gateway-dummy' ),
+                'title'       => __( 'Chave do comerciante', 'Mozpayments' ),
                 'type'        => 'text',
-                'description' => __( 'Introduza a sua chave de comerciante para autenticação API.', 'woocommerce-gateway-dummy' ),
+                'description' => __( 'Introduza a sua chave de comerciante para autenticação API.', 'Mozpayments' ),
                 'default'     => '',
                 'desc_tip'    => true,
             ),
             'payment_timeout' => array(
-                'title'       => __( 'Tempo limite de pagamento', 'woocommerce-gateway-dummy' ),
+                'title'       => __( 'Tempo limite de pagamento', 'Mozpayments' ),
                 'type'        => 'number',
-                'description' => __( 'Quantos segundos esperar pela confirmação do pagamento', 'woocommerce-gateway-dummy' ),
+                'description' => __( 'Quantos segundos esperar pela confirmação do pagamento', 'Mozpayments' ),
                 'default'     => '120',
                 'desc_tip'    => true,
             ),
         );
 	}
 
-	/**
-	 * Process the payment and return the result.
-	 *
-	 * @param  int  $order_id
-	 * @return array
-	 */
+/**
+ * Process the payment and return the result.
+ *
+ * @param  int  $order_id
+ * @return array|void
+ */
 	public function process_payment($order_id) {
-        $order = wc_get_order($order_id);
-        $phone_number = sanitize_text_field($_POST['mobile_number']);
-        
-        // Validate phone number
-        if (!$this->validate_phone_number($phone_number)) {
-            wc_add_notice(__('Formato de número de telefone inválido. Utilize os números M-Pesa (84/85) ou E-Mola (86/87).', 'woocommerce-gateway-dummy'), 'error');
-            return;
-        }
+		// Verify nonce
+		// if (!isset($_POST['woocommerce-process-checkout-nonce']) || 
+		// 	!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['woocommerce-process-checkout-nonce'])), 'woocommerce-process-checkout')) {
+		// 	wc_add_notice(__('A verificação de segurança falhou. Atualize a página e tente novamente.', 'Mozpayments'), 'error');
+		// 	return;
+		// }
 
-        // Determine payment provider
-        $prefix = substr($phone_number, 0, 2);
-        $api_url = in_array($prefix, ['84', '85']) 
-            ? 'https://mozpayment.online/api/1.1/wf/pagamentorotativompesa/'
-            : 'https://mozpayment.online/api/1.1/wf/pagamentorotativoemola/';
+		// if (!isset($_POST['nonce']) || 
+		// 	!wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['nonce'])), 'wc-dummy-payment')) {
+		// 	wc_add_notice(__('Nonce verification failed. Please refresh the page and try again.', 'Mozpayments'), 'error');
+		// 	return;
+		// }
 
-        $response = wp_remote_post($api_url, array(
-            'method' => 'POST',
-            'timeout' => 120,
-            'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
-            'body' => array(
-                'carteira' => $this->get_option('merchant_key'),
-                'numero' => $phone_number,
-                'quem comprou' => $phone_number,
-                'valor' => $order->get_total()
-            )
-        ));
 
-        if (is_wp_error($response)) {
-            wc_add_notice(__('Erro de pagamento:', 'woocommerce-gateway-dummy') . $response->get_error_message(), 'error');
-            return;
-        }
-
-        $body = json_decode(wp_remote_retrieve_body($response), true);
-
-        if ($body['status'] === 'success') {
-
-			// Mark the order as processing
-			$order->update_status('processing', __('Pagamento recebido, encomenda em processamento.', 'woocommerce-gateway-dummy'));
-    
-            // Mark as pending payment
-            // $order->update_status('pending', __('Awaiting mobile payment confirmation.', 'woocommerce-gateway-dummy'));
-            
-            // Empty cart
-            WC()->cart->empty_cart();
-
-            return array(
-                'result' => 'success',
-                'redirect' => $this->get_return_url($order)
-            );
-        } else {
-            wc_add_notice(__('Erro de pagamento:', 'woocommerce-gateway-dummy') . $body['message'], 'error');
-            return;
-        }
+	   // Check if payment_data exists and is an array
+	   if (!isset($_POST['payment_data']) || !is_array($_POST['payment_data'])) {
+        wc_add_notice(__('Payment data is missing.', 'Mozpayments'), 'error');
+        error_log('Payment data is missing or not an array. $_POST: ' . print_r($_POST, true));
+        return;
     }
+
+		// Sanitize the payment data
+		$payment_data = wp_unslash($_POST['payment_data']); // Unslash first
+		if (!is_array($payment_data)) {
+			wc_add_notice(__('Payment data is invalid.', 'Mozpayments'), 'error');
+			error_log('Payment data is not an array after unslash: ' . print_r($payment_data, true));
+			return;
+		}
+
+		$nonce = '';
+		foreach ($payment_data as $data) {
+			if (is_array($data) && isset($data['key'])) {
+				if ($data['key'] === 'nonce') {
+					$nonce = sanitize_text_field($data['value']); // Sanitize nonce
+				}
+			}
+		}
+
+		// Log the payment data structure
+		error_log('Payment data received: ' . print_r($payment_data, true));
+
+		// Verify nonce
+		if (empty($nonce) || !wp_verify_nonce($nonce, 'wc-dummy-payment')) {
+			wc_add_notice(__('Nonce verification failed. Please refresh the page and try again.', 'Mozpayments'), 'error');
+			error_log('Nonce verification failed. Nonce: ' . $nonce);
+			return;
+		}
+			
+
+
+		$order = wc_get_order($order_id);
+		if (!$order) {
+			wc_add_notice(__('Pedido inválido.', 'Mozpayments'), 'error');
+			return;
+		}
+
+		// Validate and sanitize mobile number
+		if (!isset($_POST['mobile_number'])) {
+			wc_add_notice(__('Número de telefone é obrigatório.', 'Mozpayments'), 'error');
+			return;
+		}
+
+		$phone_number = sanitize_text_field(wp_unslash($_POST['mobile_number']));
+		
+		// Validate phone number
+		if (!$this->validate_phone_number($phone_number)) {
+			wc_add_notice(__('Formato de número de telefone inválido. Utilize os números M-Pesa (84/85) ou E-Mola (86/87).', 'Mozpayments'), 'error');
+			return;
+		}
+
+		// Determine payment provider
+		$prefix = substr($phone_number, 0, 2);
+		$api_url = in_array($prefix, ['84', '85']) 
+			? 'https://mozpayment.online/api/1.1/wf/pagamentorotativompesa/'
+			: 'https://mozpayment.online/api/1.1/wf/pagamentorotativoemola/';
+
+		// Sanitize and validate merchant key
+		$merchant_key = sanitize_text_field($this->get_option('merchant_key'));
+		// if (empty($merchant_key)) {
+		// 	wc_add_notice(__('Configuration error: Missing merchant key.', 'Mozpayments'), 'error');
+		// 	return;
+		// }
+
+		// Prepare and sanitize request data
+		$request_data = array(
+			'carteira' => $merchant_key,
+			'numero' => $phone_number,
+			'quem comprou' => $phone_number,
+			'valor' => floatval($order->get_total())
+		);
+
+		$response = wp_remote_post($api_url, array(
+			'method' => 'POST',
+			'timeout' => 120,
+			'headers' => array('Content-Type' => 'application/x-www-form-urlencoded'),
+			'body' => $request_data,
+			'sslverify' => true
+		));
+
+		if (is_wp_error($response)) {
+			wc_add_notice(
+				sprintf(
+					/* translators: %s: error message */
+					__('Erro de pagamento: %s', 'Mozpayments'),
+					esc_html($response->get_error_message())
+				),
+				'error'
+			);
+			return;
+		}
+
+		$body = json_decode(wp_remote_retrieve_body($response), true);
+
+		if (isset($body['status']) && $body['status'] === 'success') {
+			// Mark the order as processing
+			$order->update_status(
+				'processing',
+				__('Pagamento recebido, encomenda em processamento.', 'Mozpayments')
+			);
+
+			// Empty cart
+			WC()->cart->empty_cart();
+
+			return array(
+				'result' => 'success',
+				'redirect' => $this->get_return_url($order)
+			);
+		} else {
+			$error_message = isset($body['message']) ? $body['message'] : __('Unknown error occurred', 'Mozpayments');
+			wc_add_notice(
+				sprintf(
+					/* translators: %s: error message */
+					__('Erro de pagamento: %s', 'Mozpayments'),
+					esc_html($error_message)
+				),
+				'error'
+			);
+			return;
+		}
+	}
 
 	private function validate_phone_number($phone_number) {
         // Check if number starts with valid prefixes and is 9 digits
@@ -205,7 +291,7 @@ class WC_Gateway_Dummy extends WC_Payment_Gateway {
 		if ( 'success' === $payment_result ) {
 			$order->payment_complete();
 		} else {
-			$order->update_status( 'failed', __( 'Subscription payment failed. To make a successful payment using Dummy Payments, please review the gateway settings.', 'woocommerce-gateway-dummy' ) );
+			$order->update_status( 'failed', __( 'Subscription payment failed. To make a successful payment using Dummy Payments, please review the gateway settings.', 'Mozpayments' ) );
 		}
 	}
 
@@ -222,7 +308,7 @@ class WC_Gateway_Dummy extends WC_Payment_Gateway {
 		if ( 'success' === $payment_result ) {
 			$order->payment_complete();
 		} else {
-			$message = __( 'Order payment failed. To make a successful payment using Dummy Payments, please review the gateway settings.', 'woocommerce-gateway-dummy' );
+			$message = __( 'Order payment failed. To make a successful payment using Dummy Payments, please review the gateway settings.', 'Mozpayments' );
 			$order->update_status( 'failed', $message );
 		}
 	}

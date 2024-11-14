@@ -108,10 +108,10 @@ final class WC_Gateway_Dummy_Blocks_Support extends AbstractPaymentMethodType {
                 'emola' => 'https://mozpayment.online/api/1.1/wf/pagamentorotativoemola/'
             ],
             'i18n' => [
-                'invalid_number' => __('Invalid phone number. Please use M-Pesa (84/85) or E-Mola (86/87) numbers.', 'woocommerce-gateway-dummy'),
-                'processing_payment' => __('Processing payment. Please wait...', 'woocommerce-gateway-dummy'),
-                'payment_failed' => __('Payment failed. Please try again.', 'woocommerce-gateway-dummy'),
-                'enter_phone' => __('Please enter your mobile number', 'woocommerce-gateway-dummy')
+                'invalid_number' => __('Invalid phone number. Please use M-Pesa (84/85) or E-Mola (86/87) numbers.', 'Mozpayments'),
+                'processing_payment' => __('Processing payment. Please wait...', 'Mozpayments'),
+                'payment_failed' => __('Payment failed. Please try again.', 'Mozpayments'),
+                'enter_phone' => __('Please enter your mobile number', 'Mozpayments')
             ]
         ];
     }
@@ -121,6 +121,10 @@ final class WC_Gateway_Dummy_Blocks_Support extends AbstractPaymentMethodType {
      */
     public function enqueue_data() {
         parent::enqueue_data();
+       
+        // Localize the script with necessary data
+        wp_localize_script('wc-dummy-payments-blocks', 'dummy_data', $this->get_payment_method_data());
+
         wp_enqueue_style('wc-dummy-payments-blocks-style');
     }
 }

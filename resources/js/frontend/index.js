@@ -32,11 +32,14 @@ const Content = ({ eventRegistration, emitResponse }) => {
                 };
             }
 
+            console.log(settings.nonce); // Check if this logs the correct nonce value
+
             return {
                 type: 'success',
                 meta: {
                     paymentMethodData: {
                         mobile_number: phoneNumber,
+                        nonce: settings.nonce, // Include the nonce here
                     },
                 },
             };
